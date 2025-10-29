@@ -1,0 +1,120 @@
+# GitHub Pages Configuration for Imobly Documentation
+title: "Imobly Documentation"
+description: "Sistema completo de gestão imobiliária - Documentação oficial"
+url: "https://imobly.github.io"
+baseurl: "/Documentation"
+author: "Equipe Imobly"
+email: "devcostta@gmail.com"
+
+# Theme Configuration
+theme: minima
+remote_theme: "just-the-docs/just-the-docs"
+
+# Navigation Structure
+nav_order: 1
+has_children: true
+has_toc: false
+
+# Footer content
+footer_content: "Copyright &copy; 2024 Imobly. Distribuído sob <a href=\"https://github.com/Imobly/Documentation/tree/main/LICENSE\">Licença MIT</a>."
+
+# Google Analytics (opcional)
+# google_analytics: UA-XXXXXXXX-X
+
+# Enable search
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Aux links for the upper right navigation
+aux_links:
+  "GitHub":
+    - "//github.com/Imobly/Documentation"
+  "Demo":
+    - "//demo.imobly.com"
+
+# Makes Aux links open in a new tab. Default is false
+aux_links_new_tab: true
+
+# Heading anchor links appear on hover over h1-h6 tags in page content
+heading_anchors: true
+
+# Color scheme
+color_scheme: imobly
+
+# Plugin configuration
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+
+# Collections
+collections:
+  guides:
+    output: true
+    permalink: /:collection/:name/
+  api:
+    output: true
+    permalink: /:collection/:name/
+  auth:
+    output: true
+    permalink: /:collection/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: "_guides"
+      type: "guides"
+    values:
+      layout: "default"
+      parent: "Guias"
+  - scope:
+      path: "_api"
+      type: "api"
+    values:
+      layout: "default"
+      parent: "API"
+  - scope:
+      path: "_auth"
+      type: "auth"
+    values:
+      layout: "default"
+      parent: "Autenticação"
+
+# Exclude from processing
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - "*.log"
+  - "*.tmp"

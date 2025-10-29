@@ -1,0 +1,151 @@
+<nav class="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Navegação</h3>
+    
+    <!-- Guides Section -->
+    {% if page.url contains '/guides/' or page.parent == 'Guias' %}
+    <div class="mb-6">
+        <h4 class="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">Guias</h4>
+        <ul class="space-y-2">
+            <li>
+                <a href="{{ '/guides/getting-started' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'getting-started' %}text-blue-600 font-medium{% endif %}">
+                    🚀 Getting Started
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/guides/architecture' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'architecture' %}text-blue-600 font-medium{% endif %}">
+                    🏗️ Arquitetura
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/guides/testing' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'testing' %}text-blue-600 font-medium{% endif %}">
+                    🧪 Testing
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/guides/deployment' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'deployment' %}text-blue-600 font-medium{% endif %}">
+                    🚢 Deploy
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- API Section -->
+    {% if page.url contains '/api/' or page.parent == 'API' %}
+    <div class="mb-6">
+        <h4 class="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">API Reference</h4>
+        <ul class="space-y-2">
+            <li>
+                <a href="{{ '/api/overview' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'overview' %}text-blue-600 font-medium{% endif %}">
+                    📚 Overview
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/api/authentication' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'authentication' %}text-blue-600 font-medium{% endif %}">
+                    🔐 Autenticação
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/api/properties' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'properties' %}text-blue-600 font-medium{% endif %}">
+                    🏢 Propriedades
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/api/tenants' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'tenants' %}text-blue-600 font-medium{% endif %}">
+                    👥 Inquilinos
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/api/contracts' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'contracts' %}text-blue-600 font-medium{% endif %}">
+                    📄 Contratos
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/api/payments' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'payments' %}text-blue-600 font-medium{% endif %}">
+                    💰 Pagamentos
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- Auth Section -->
+    {% if page.url contains '/auth/' or page.parent == 'Autenticação' %}
+    <div class="mb-6">
+        <h4 class="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">Autenticação</h4>
+        <ul class="space-y-2">
+            <li>
+                <a href="{{ '/auth/overview' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'overview' %}text-blue-600 font-medium{% endif %}">
+                    🔐 Overview
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/auth/endpoints' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'endpoints' %}text-blue-600 font-medium{% endif %}">
+                    🔗 Endpoints
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/auth/config' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'config' %}text-blue-600 font-medium{% endif %}">
+                    ⚙️ Configuração
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/auth/deployment' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'deployment' %}text-blue-600 font-medium{% endif %}">
+                    🚀 Deploy
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/auth/faq' | relative_url }}" 
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors {% if page.url contains 'faq' %}text-blue-600 font-medium{% endif %}">
+                    ❓ FAQ
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- Quick Links -->
+    <div class="border-t border-gray-200 pt-4">
+        <h4 class="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">Links Rápidos</h4>
+        <ul class="space-y-2">
+            <li>
+                <a href="http://localhost:8000/docs" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                    📖 Swagger UI
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/Imobly/Documentation/issues" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                    🐛 Reportar Bug
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/Imobly/Documentation/discussions" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="block text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                    💬 Discussões
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

@@ -1,11 +1,10 @@
-# 📦 Imobly Documentation
+# � Imobly Documentation
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://imobly.github.io/Documentation/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Jekyll](https://img.shields.io/badge/Jekyll-4.3+-red.svg)](https://jekyllrb.com/)
 
-Uma plataforma moderna e completa para gestão imobiliária, construída com FastAPI e seguindo as melhores práticas de desenvolvimento.
+> Documentação oficial do sistema de gestão imobiliária Imobly, hospedada no GitHub Pages.
 
 ## ✨ Principais Funcionalidades
 
