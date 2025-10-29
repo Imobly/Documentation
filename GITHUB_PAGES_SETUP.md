@@ -1,27 +1,38 @@
-# GitHub Pages Setup Guide
+# 🚀 Como Ativar GitHub Pages - Passo a Passo
 
-Este guia explica como ativar o GitHub Pages para hospedar a documentação do Imobly.
+## ❗ IMPORTANTE: Siga estes passos exatamente
 
-## 🚀 Ativando GitHub Pages
+### Passo 1: Acesse as Configurações do Repositório
 
-### Passo 1: Configurações do Repositório
+1. Vá para: **https://github.com/Imobly/Documentation**
+2. Clique na aba **Settings** (no topo da página)
+3. No menu lateral esquerdo, procure e clique em **Pages**
 
-1. Vá para o repositório no GitHub
-2. Clique em **Settings** (Configurações)
-3. Role para baixo até encontrar **Pages** no menu lateral
+### Passo 2: Configurar o GitHub Pages
 
-### Passo 2: Configurar Source
+Na seção **Source**:
 
-1. Em **Source**, selecione **Deploy from a branch**
-2. Em **Branch**, selecione **main**
-3. Em **Folder**, deixe **/ (root)**
-4. Clique em **Save**
+1. **Source**: Selecione **"Deploy from a branch"**
+2. **Branch**: Selecione **"main"** 
+3. **Folder**: Deixe **"/ (root)"**
+4. Clique no botão **"Save"**
 
-### Passo 3: Aguardar Deploy
+### Passo 3: Aguardar o Deploy
 
-- O GitHub Pages vai automaticamente fazer o build
-- Aguarde alguns minutos (normalmente 2-5 minutos)
-- Você receberá uma URL como: `https://imobly.github.io/Documentation/`
+- Aparecerá uma mensagem: "GitHub Pages source saved"
+- Aguarde 2-5 minutos para o primeiro build
+- Recarregue a página de Settings → Pages
+- Você verá uma mensagem verde: "Your site is published at https://imobly.github.io/Documentation/"
+
+### Passo 4: Verificar se Funcionou
+
+Acesse: **https://imobly.github.io/Documentation/**
+
+Se ainda não funcionar, verifique:
+
+1. **Actions**: Vá para a aba "Actions" do repositório e veja se há erros de build
+2. **Aguarde mais**: Às vezes demora até 10 minutos na primeira vez
+3. **Force refresh**: Pressione Ctrl+F5 para forçar o reload da página
 
 ## 📁 Estrutura Organizada
 
