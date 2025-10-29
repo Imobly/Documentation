@@ -1,45 +1,10 @@
-# GitHub Pages Configuration for Imobly Documentation
 title: "Imobly Documentation"
-description: "Sistema completo de gestão imobiliária - Documentação oficial"
+description: "Sistema completo de gestão imobiliária"
 url: "https://imobly.github.io"
 baseurl: "/Documentation"
-author: "Equipe Imobly"
-email: "devcostta@gmail.com"
 
-# Theme Configuration
 remote_theme: "just-the-docs/just-the-docs"
 
-# Footer content
-footer_content: "Copyright &copy; 2024 Imobly. Distribuído sob <a href=\"https://github.com/Imobly/Documentation/tree/main/LICENSE\">Licença MIT</a>."
-
-# Google Analytics (opcional)
-# google_analytics: UA-XXXXXXXX-X
-
-# Enable search
-search_enabled: true
-search:
-  heading_level: 2
-  previews: 3
-  preview_words_before: 5
-  preview_words_after: 10
-  tokenizer_separator: /[\s/]+/
-  rel_url: true
-  button: false
-
-# Aux links for the upper right navigation
-aux_links:
-  "GitHub":
-    - "//github.com/Imobly/Documentation"
-  "Demo":
-    - "//demo.imobly.com"
-
-# Makes Aux links open in a new tab. Default is false
-aux_links_new_tab: true
-
-# Heading anchor links appear on hover over h1-h6 tags in page content
-heading_anchors: true
-
-# Plugin configuration
 plugins:
   - jekyll-feed
   - jekyll-sitemap

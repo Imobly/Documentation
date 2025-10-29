@@ -1,18 +1,14 @@
 ---
 layout: default
 title: Home
-nav_order: 1
 description: "Documentação oficial do Imobly - Sistema completo de gestão imobiliária"
-permalink: /
 ---
 
-# 🏢 Imobly Documentation
-{: .fs-9 }
+# Imobly Documentation
 
-Sistema completo de gestão imobiliária moderno e escalável
-{: .fs-6 .fw-300 }
+Sistema completo de gestão imobiliária moderno e escalável.
 
-[Começar agora](#quick-start){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [Ver no GitHub](https://github.com/Imobly/Documentation){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Ver no GitHub](https://github.com/Imobly/Documentation)
 
 ---
 
@@ -66,27 +62,19 @@ uvicorn app.main:app --reload
 
 ---
 
-## 📚 Navegação da Documentação
+## Navegação da Documentação
 
-<div class="code-example" markdown="1">
-### [🚀 Getting Started](./guides/getting-started)
+### [Getting Started](guides/getting-started)
 Guia completo de instalação e configuração inicial
 
-### [📖 API Reference](./api/overview) 
+### [API Reference](api/) 
 Documentação completa da API REST
 
-### [🔐 Autenticação](./auth/overview)
+### [Autenticação](auth/)
 Sistema de autenticação e autorização
 
-### [🏗️ Arquitetura](./guides/architecture)
+### [Arquitetura](guides/architecture)
 Visão detalhada da arquitetura do sistema
-
-### [🧪 Testes](./guides/testing)
-Estratégias e guias de teste
-
-### [🚢 Deploy](./guides/deployment)
-Guias de implantação em produção
-</div>
 
 ---
 
