@@ -129,6 +129,18 @@ graph TB
 
     Guia completo de instalação e configuração inicial
 
+-   :material-cog:{ .lg .middle } **[Arquitetura](guides/architecture.md)**
+
+    ---
+
+    Visão detalhada da arquitetura do sistema
+
+-   :material-chart-box:{ .lg .middle } **[Modelagem](diagrams/index.md)**
+
+    ---
+
+    Diagramas UML e modelagem do banco de dados
+
 -   :material-api:{ .lg .middle } **[API Reference](api/index.md)**
 
     ---
@@ -140,12 +152,6 @@ graph TB
     ---
 
     Sistema de autenticação e autorização
-
--   :material-cog:{ .lg .middle } **[Arquitetura](guides/architecture.md)**
-
-    ---
-
-    Visão detalhada da arquitetura do sistema
 
 </div>
 

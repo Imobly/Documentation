@@ -99,7 +99,9 @@ nav:
   - 🚀 Guias:
     - Getting Started: guides/getting-started.md
     - Arquitetura: guides/architecture.md
-  - 📖 API Reference:
+  - � Modelagem:
+    - Diagramas: diagrams/index.md
+  - �📖 API Reference:
     - API Overview: api/index.md
   - 🔐 Autenticação:
     - Auth Overview: auth/index.md

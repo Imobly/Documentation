@@ -96,7 +96,7 @@ uvicorn app.main:app --reload
 
 ## 📊 Diagrama UML
 
-![alt text](image.png)
+![Diagrama de Classes](docs/image.png)
 
 ## 🧪 Qualidade do Código
 
