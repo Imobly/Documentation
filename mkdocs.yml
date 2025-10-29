@@ -1,0 +1,132 @@
+site_name: Imobly Documentation
+site_description: Sistema completo de gestão imobiliária - Documentação oficial
+site_author: Equipe Imobly
+site_url: https://imobly.github.io/Documentation/
+
+# Repository
+repo_name: Imobly/Documentation
+repo_url: https://github.com/Imobly/Documentation
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2024 Imobly - Distribuído sob Licença MIT
+
+# Configuration
+theme:
+  name: material
+  language: pt
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Alternar para modo escuro
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Alternar para modo claro
+  
+  font:
+    text: Inter
+    code: Roboto Mono
+  
+  icon:
+    logo: material/home-city
+    repo: fontawesome/brands/github
+  
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - content.code.annotate
+
+# Plugins
+plugins:
+  - search:
+      lang: pt
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+  - minify:
+      minify_html: true
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - abbr
+  - def_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+# Navigation
+nav:
+  - Home: index.md
+  - 🚀 Guias:
+    - Getting Started: guides/getting-started.md
+    - Arquitetura: guides/architecture.md
+  - 📖 API Reference:
+    - API Overview: api/index.md
+  - 🔐 Autenticação:
+    - Auth Overview: auth/index.md
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Imobly
+      name: GitHub
+    - icon: fontawesome/solid/globe
+      link: https://demo.imobly.com
+      name: Demo
+    - icon: fontawesome/solid/envelope
+      link: mailto:devcostta@gmail.com
+      name: Email
+  
+  version:
+    provider: mike
+    default: latest
+
+# Custom CSS
+extra_css:
+  - stylesheets/extra.css
+
+# Analytics (opcional)
+# extra:
+#   analytics:
+#     provider: google
+#     property: G-XXXXXXXXXX
