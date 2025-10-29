@@ -7,13 +7,7 @@ author: "Equipe Imobly"
 email: "devcostta@gmail.com"
 
 # Theme Configuration
-theme: minima
 remote_theme: "just-the-docs/just-the-docs"
-
-# Navigation Structure
-nav_order: 1
-has_children: true
-has_toc: false
 
 # Footer content
 footer_content: "Copyright &copy; 2024 Imobly. Distribuído sob <a href=\"https://github.com/Imobly/Documentation/tree/main/LICENSE\">Licença MIT</a>."
@@ -45,9 +39,6 @@ aux_links_new_tab: true
 # Heading anchor links appear on hover over h1-h6 tags in page content
 heading_anchors: true
 
-# Color scheme
-color_scheme: imobly
-
 # Plugin configuration
 plugins:
   - jekyll-feed
@@ -70,13 +61,10 @@ kramdown:
 collections:
   guides:
     output: true
-    permalink: /:collection/:name/
   api:
     output: true
-    permalink: /:collection/:name/
   auth:
     output: true
-    permalink: /:collection/:name/
 
 # Defaults
 defaults:
@@ -85,24 +73,6 @@ defaults:
       type: "pages"
     values:
       layout: "default"
-  - scope:
-      path: "_guides"
-      type: "guides"
-    values:
-      layout: "default"
-      parent: "Guias"
-  - scope:
-      path: "_api"
-      type: "api"
-    values:
-      layout: "default"
-      parent: "API"
-  - scope:
-      path: "_auth"
-      type: "auth"
-    values:
-      layout: "default"
-      parent: "Autenticação"
 
 # Exclude from processing
 exclude:
