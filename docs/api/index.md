@@ -6,9 +6,25 @@ Esta seção contém a documentação completa da API REST do Imobly.
 
 A API do Imobly é uma RESTful API construída com FastAPI que oferece endpoints para gerenciar propriedades, inquilinos, contratos e pagamentos.
 
-### Base URL
+### Base URLs
 
-    https://api.imobly.com/api/v1
+#### Produção (Render)
+```
+Backend API: https://backend-non0.onrender.com
+Auth API: https://auth-api-3zxk.onrender.com
+```
+
+#### Desenvolvimento Local
+```
+Backend API: http://localhost:8000
+Auth API: http://localhost:8001
+```
+
+!!! info "Documentação Interativa"
+    - **Backend Swagger:** [backend-non0.onrender.com/docs](https://backend-non0.onrender.com/docs)
+    - **Auth Swagger:** [auth-api-3zxk.onrender.com/docs](https://auth-api-3zxk.onrender.com/docs)
+    - **ReDoc (Backend):** [backend-non0.onrender.com/redoc](https://backend-non0.onrender.com/redoc)
+    - **ReDoc (Auth):** [auth-api-3zxk.onrender.com/redoc](https://auth-api-3zxk.onrender.com/redoc)
 
 ### Versionamento
 

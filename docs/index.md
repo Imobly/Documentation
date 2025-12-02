@@ -85,15 +85,30 @@ O **Imobly** é uma plataforma completa para gestão imobiliária que oferece co
 !!! success "Acesse a Documentação"
     Após a instalação, acesse: [http://localhost:8000/docs](http://localhost:8000/docs)
 
+## 🌐 Aplicação em Produção
+
+O sistema Imobly está disponível em produção na plataforma **Render**:
+
+| Serviço | URL | Descrição |
+|---------|-----|-----------|
+| **Frontend** | [imobly.onrender.com](https://imobly.onrender.com) | Interface web do sistema |
+| **Backend API** | [backend-non0.onrender.com](https://backend-non0.onrender.com) | API principal |
+| **Auth API** | [auth-api-3zxk.onrender.com](https://auth-api-3zxk.onrender.com) | Serviço de autenticação |
+| **API Docs (Backend)** | [backend-non0.onrender.com/docs](https://backend-non0.onrender.com/docs) | Documentação Swagger |
+| **API Docs (Auth)** | [auth-api-3zxk.onrender.com/docs](https://auth-api-3zxk.onrender.com/docs) | Documentação Swagger |
+
+!!! note "Serviços em Cold Start"
+    Os serviços podem levar alguns segundos para responder na primeira requisição após períodos de inatividade (cold start).
+
 ## 🏗️ Arquitetura
 
 ```mermaid
 graph TB
-    A[Frontend<br/>React/Vue] --> B[API Layer<br/>FastAPI]
-    B --> C[Database<br/>MySQL]
+    A[Frontend<br/>Next.js] --> B[API Layer<br/>FastAPI]
+    B --> C[Database<br/>PostgreSQL]
     B --> D[File Storage<br/>Local/S3]
     
-    subgraph "Backend Services"
+    subgraph "Backend Services - Render"
         B --> E[Auth Service]
         B --> F[Property Service]
         B --> G[Payment Service]
@@ -108,15 +123,19 @@ graph TB
 
 ## 🛠️ Stack Tecnológica
 
+### Frontend
+- **Next.js** - Framework React para produção
+
 ### Backend
 - **FastAPI** - Framework web moderno e rápido
 - **SQLAlchemy** - ORM avançado para Python
 - **Pydantic** - Validação de dados com tipos
-- **MySQL 8.0** - Banco de dados principal
+- **PostgreSQL** - Banco de dados principal
 
 ### DevOps
 - **Docker & Docker Compose** - Containerização
 - **GitHub Actions** - CI/CD pipeline
+- **Render** - Plataforma de hosting
 - **Nginx** - Proxy reverso
 
 ## 📚 Navegação

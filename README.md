@@ -1,10 +1,17 @@
-# � Imobly Documentation
+# 🏢 Imobly Documentation
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://imobly.github.io/Documentation/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Jekyll](https://img.shields.io/badge/Jekyll-4.3+-red.svg)](https://jekyllrb.com/)
+[![MkDocs](https://img.shields.io/badge/MkDocs-Material-blue.svg)](https://squidfunk.github.io/mkdocs-material/)
 
 > Documentação oficial do sistema de gestão imobiliária Imobly, hospedada no GitHub Pages.
+
+## 🌐 Acesso
+
+- **Documentação:** [imobly.github.io/Documentation](https://imobly.github.io/Documentation/)
+- **Frontend:** [imobly.onrender.com](https://imobly.onrender.com)
+- **Backend API:** [backend-non0.onrender.com/docs](https://backend-non0.onrender.com/docs)
+- **Auth API:** [auth-api-3zxk.onrender.com/docs](https://auth-api-3zxk.onrender.com/docs)
 
 ## ✨ Principais Funcionalidades
 
@@ -54,14 +61,24 @@ uvicorn app.main:app --reload
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   API Layer     │    │   Database      │
-│   (React/Vue)   │◄──►│   (FastAPI)     │◄──►│   (MySQL)       │
+│   (Next.js)     │◄──►│   (FastAPI)     │◄──►│  (PostgreSQL)   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                      │                      │
+         │                      │                      │
+    Render.com            Render.com              Render.com
                                 │
                        ┌─────────────────┐
                        │   File Storage  │
                        │   (Local/S3)    │
                        └─────────────────┘
 ```
+
+### Hospedagem (Render)
+
+- **Frontend (Next.js):** imobly.onrender.com
+- **Backend API (FastAPI):** backend-non0.onrender.com
+- **Auth API (FastAPI):** auth-api-3zxk.onrender.com
+- **Database:** PostgreSQL (Render Managed)
 
 ### Camadas da Aplicação
 
@@ -79,6 +96,9 @@ uvicorn app.main:app --reload
 
 ## 🛠️ Stack Tecnológica
 
+### Frontend
+- **Next.js** - Framework React para produção
+
 ### Backend
 - **FastAPI** - Framework web moderno e rápido
 - **SQLAlchemy** - ORM avançado para Python
@@ -87,16 +107,29 @@ uvicorn app.main:app --reload
 - **Uvicorn** - Servidor ASGI de alta performance
 
 ### Database
-- **MySQL 8.0** - Banco de dados principal
+- **PostgreSQL** - Banco de dados principal
 
 ### DevOps
 - **Docker & Docker Compose** - Containerização
+- **Render** - Plataforma de hosting em nuvem
 - **Nginx** - Proxy reverso e servir arquivos estáticos
 - **GitHub Actions** - CI/CD pipeline
 
-## 📊 Diagrama UML
+## 📊 Modelagem
 
-![Diagrama de Classes](docs/image.png)
+- **Diagrama UML:** [Ver diagramas](https://imobly.github.io/Documentation/diagrams/)
+- **DDL Database:** [DDL.sql](docs/diagrams/DDL.sql)
+
+### Estrutura do Banco (PostgreSQL)
+
+O banco de dados possui 7 tabelas principais:
+- `properties` - Propriedades imobiliárias
+- `units` - Unidades dentro de propriedades
+- `tenants` - Inquilinos
+- `contracts` - Contratos de locação
+- `payments` - Pagamentos e recebimentos
+- `expenses` - Despesas das propriedades
+- `notifications` - Sistema de notificações
 
 ## 🧪 Qualidade do Código
 
