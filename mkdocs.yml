@@ -99,10 +99,13 @@ nav:
   - 🚀 Guias:
     - Getting Started: guides/getting-started.md
     - Arquitetura: guides/architecture.md
-  - � Modelagem:
+  - 📊 Modelagem:
     - Diagramas: diagrams/index.md
-  - �📖 API Reference:
+    - Protótipo PDF: prototypes/Protorype.pdf
+    - Diagrama UML PDF: prototypes/diagramaUML.pdf
+  - 📖 API Reference:
     - API Overview: api/index.md
+    - Referência Completa: api/reference.md
   - 🔐 Autenticação:
     - Auth Overview: auth/index.md
 

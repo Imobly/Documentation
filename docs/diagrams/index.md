@@ -257,15 +257,15 @@ O script DDL completo para criação do banco de dados PostgreSQL está disponí
 
 ## Protótipos da Interface
 
-### Telas do Sistema
+### Documentos do Protótipo
 
-*Espaço reservado para capturas de tela do protótipo do sistema Imobly.*
+Os protótipos completos do sistema Imobly estão disponíveis em PDF:
 
-<!-- Adicione as imagens dos protótipos aqui:
-![Dashboard](../prototypes/dashboard.png)
-![Propriedades](../prototypes/properties.png)
-![Contratos](../prototypes/contracts.png)
--->
+- **[📄 Protótipo Completo (PDF)](../prototypes/Protorype.pdf)** - Protótipo detalhado das telas do sistema
+- **[📊 Diagrama UML (PDF)](../prototypes/diagramaUML.pdf)** - Diagrama de classes e estrutura
+
+!!! tip "Visualização de PDFs"
+    Para melhor visualização, baixe os PDFs e abra em um leitor de PDF. O navegador pode ter limitações de renderização.
 
 ## Próximos Diagramas
 

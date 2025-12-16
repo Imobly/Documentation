@@ -119,6 +119,8 @@ uvicorn app.main:app --reload
 
 - **Diagrama UML:** [Ver diagramas](https://imobly.github.io/Documentation/diagrams/)
 - **DDL Database:** [DDL.sql](docs/diagrams/DDL.sql)
+- **Protótipo (PDF):** [Protorype.pdf](docs/prototypes/Protorype.pdf)
+- **Diagrama UML (PDF):** [diagramaUML.pdf](docs/prototypes/diagramaUML.pdf)
 
 ### Estrutura do Banco (PostgreSQL)
 

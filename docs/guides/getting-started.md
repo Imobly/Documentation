@@ -223,5 +223,5 @@ Error starting userland proxy: listen tcp4 0.0.0.0:8000: bind: address already i
 Se você encontrar problemas:
 
 1. Verifique os [Issues conhecidos](https://github.com/Imobly/Documentation/issues)
-2. Consulte a [documentação da API](../api/)
+2. Consulte a [documentação da API](../api/index.md)
 3. Abra um [novo issue](https://github.com/Imobly/Documentation/issues/new)
