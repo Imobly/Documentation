@@ -1,227 +1,293 @@
-# Getting Started
+# 🚀 Getting Started
 
-Este guia irá te ajudar a configurar e executar o **Imobly** em seu ambiente de desenvolvimento.
+Este guia vai ajudá-lo a configurar e executar o projeto Imobly localmente em menos de 10 minutos.
 
-## ⚡ Quick Start
+---
 
-### 1. Pré-requisitos
+## 📋 Pré-requisitos
 
-=== "Docker (Recomendado)"
+Antes de começar, certifique-se de ter instalado:
 
-    - Docker 20.10+
-    - Docker Compose 2.0+
+- **Docker** (versão 20.10+) e **Docker Compose** (versão 2.0+)
+- **Make** (Windows: `choco install make` ou use Git Bash)
+- **Git**
+- **Node.js 18+** (opcional, apenas se não usar Docker)
+- **Python 3.11+** (opcional, apenas se não usar Docker)
 
-=== "Instalação Local"
-
-    - Python 3.9+
-    - MySQL 8.0
-    - Redis (opcional)
-
-### 2. Clone o Repositório
+### Verificar Instalação
 
 ```bash
-git clone https://github.com/Imobly/imobly-backend.git
-cd imobly-backend
+docker --version
+docker compose version
+make --version
+git --version
 ```
 
-### 3. Configuração de Ambiente
-
-Copie o arquivo de exemplo:
-
-```bash
-cp .env.example .env
-```
-
-Edite o arquivo `.env` com suas configurações:
-
-```env
-# Database
-DATABASE_URL=mysql+pymysql://user:password@localhost:3306/imobly
-DATABASE_URL_TEST=mysql+pymysql://user:password@localhost:3306/imobly_test
-
-# Security
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USERNAME=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-```
-
-### 4. Executar com Docker
-
-```bash
-# Construir e executar todos os serviços
-docker-compose up --build -d
-
-# Verificar os logs
-docker-compose logs -f
-
-# Parar os serviços
-docker-compose down
-```
-
-### 5. Executar Localmente
-
-```bash
-# Instalar dependências
-pip install -r requirements.txt
-
-# Executar migrações
-alembic upgrade head
-
-# Executar o servidor
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-## 🔗 Acessando a Aplicação
-
-Após a execução, você pode acessar:
-
-- **Documentação da API:** http://localhost:8000/docs
-- **ReDoc:** http://localhost:8000/redoc
-- **API Base:** http://localhost:8000/api/v1
+---
 
 ## 📁 Estrutura do Projeto
 
+O Imobly é dividido em 3 repositórios independentes:
+
 ```
-imobly-backend/
-├── app/
-│   ├── api/
-│   │   ├── v1/
-│   │   │   ├── endpoints/
-│   │   │   └── router.py
-│   │   └── deps.py
-│   ├── core/
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   └── security.py
-│   ├── models/
-│   ├── schemas/
-│   ├── services/
-│   └── main.py
-├── alembic/
-├── tests/
-├── docker-compose.yml
-├── Dockerfile
-└── requirements.txt
+📦 Imobly/
+├── 🔐 auth-api/          # Autenticação e usuários
+├── ⚙️  Backend/          # Lógica de negócio (propriedades, contratos, etc)
+└── 🎨 Frontend/          # Interface web (Next.js)
 ```
 
-## 🔧 Comandos Úteis
+---
 
-### Database
+## 🛠️ Setup Inicial
+
+### 1️⃣ Clonar Repositórios
 
 ```bash
-# Criar nova migração
-alembic revision --autogenerate -m "mensagem da migração"
+# Crie um diretório para o projeto
+mkdir imobly-project
+cd imobly-project
 
-# Aplicar migrações
-alembic upgrade head
-
-# Reverter migração
-alembic downgrade -1
+# Clone os 3 repositórios
+git clone https://github.com/Imobly/auth-api.git
+git clone https://github.com/Imobly/Backend.git
+git clone https://github.com/Imobly/Frontend.git
 ```
 
-### Testes
+### 2️⃣ Configurar Variáveis de Ambiente
+
+Em cada repositório, copie o arquivo de exemplo:
 
 ```bash
-# Executar todos os testes
-pytest
+# Auth-api
+cd auth-api
+cp .env.example .env
+cd ..
 
-# Executar com coverage
-pytest --cov=app
+# Backend
+cd Backend/Backend
+cp .env.example .env
+cd ../..
 
-# Executar testes específicos
-pytest tests/test_auth.py
+# Frontend
+cd Frontend/Frontend
+cp .env.example .env
+cd ../..
 ```
 
-### Docker
+!!! note "Variáveis Padrão"
+    Os arquivos `.env.example` já vêm com configurações pré-definidas para desenvolvimento local. Você não precisa alterá-los inicialmente.
+
+### 3️⃣ Criar Rede Docker
+
+Os serviços precisam de uma rede compartilhada:
 
 ```bash
-# Reconstruir apenas um serviço
-docker-compose up --build api
-
-# Acessar container
-docker-compose exec api bash
-
-# Ver logs de um serviço
-docker-compose logs -f api
+docker network create imovel_network
 ```
 
-## 🔐 Autenticação
+---
 
-O sistema usa **JWT tokens** para autenticação. Para testar:
+## 🚀 Executar o Projeto
 
-1. **Registrar usuário:**
-   ```bash
-   curl -X POST "http://localhost:8000/api/v1/auth/register" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "admin@imobly.com",
-       "password": "123456789",
-       "name": "Admin"
-     }'
-   ```
+### Opção 1: Usar Makefile (Recomendado)
 
-2. **Fazer login:**
-   ```bash
-   curl -X POST "http://localhost:8000/api/v1/auth/login" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "admin@imobly.com",
-       "password": "123456789"
-     }'
-   ```
+Execute em cada repositório:
 
-3. **Usar o token nas requisições:**
-   ```bash
-   curl -X GET "http://localhost:8000/api/v1/properties" \
-     -H "Authorization: Bearer YOUR_TOKEN_HERE"
-   ```
-
-## 🎯 Próximos Passos
-
-1. **[Explore a API](../api/index.md)** - Documentação completa dos endpoints
-2. **[Configure Autenticação](../auth/index.md)** - Entenda o sistema de auth
-3. **[Veja a Arquitetura](architecture.md)** - Estrutura do sistema
-4. **[Deploy](deployment.md)** - Como fazer deploy em produção
-
-## ❓ Problemas Comuns
-
-### Erro de Conexão com Banco
-
-```
-sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server")
-```
-
-**Solução:** Verifique se o MySQL está rodando e as credenciais no `.env` estão corretas.
-
-### Erro de Permissão no Docker
-
-```
-permission denied while trying to connect to the Docker daemon socket
-```
-
-**Solução:** Execute com `sudo` ou adicione seu usuário ao grupo docker:
 ```bash
-sudo usermod -aG docker $USER
+# Auth-api
+cd auth-api
+make run-dev
+
+# Backend (novo terminal)
+cd Backend/Backend
+make run-dev
+
+# Frontend (novo terminal)
+cd Frontend/Frontend
+make run-dev
 ```
+
+### Opção 2: Docker Compose Direto
+
+```bash
+# Em cada repositório
+docker compose up -d
+```
+
+### Opção 3: Script Automatizado
+
+Se você tem um Makefile raiz configurado:
+
+```bash
+# Na raiz (onde estão os 3 repositórios)
+make run-all-dev
+```
+
+---
+
+## ✅ Verificar Instalação
+
+### 1. Verificar Containers
+
+```bash
+docker ps
+
+# Deve mostrar:
+# - auth-api-auth-api-1 (porta 8001)
+# - imobly_backend (porta 8000)
+# - frontend-frontend-1 (porta 3000)
+# - auth-api-postgres-1 (porta 5433)
+# - imobly_postgres (porta 5432)
+```
+
+### 2. Testar Endpoints
+
+```bash
+# Auth API
+curl http://localhost:8001/health
+# Resposta: {"status":"healthy"}
+
+# Backend
+curl http://localhost:8000/health
+# Resposta: {"status":"healthy","service":"Imóvel Gestão API (DEV)"}
+
+# Frontend
+curl http://localhost:3000
+# Resposta: HTML da aplicação
+```
+
+### 3. Acessar Aplicação
+
+Abra o navegador em: **http://localhost:3000**
+
+---
+
+## 👤 Criar Primeiro Usuário
+
+### Via API (cURL)
+
+```bash
+curl -X POST http://localhost:8001/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "seu@email.com",
+    "username": "seuusuario",
+    "password": "SuaSenha123!",
+    "full_name": "Seu Nome"
+  }'
+```
+
+### Via Frontend
+
+1. Acesse http://localhost:3000
+2. Clique em "Criar conta"
+3. Preencha os dados
+4. Faça login
+
+---
+
+## 🔍 Explorando a Aplicação
+
+### 📊 Dashboards
+
+- **Frontend**: http://localhost:3000
+- **Backend API Docs**: http://localhost:8000/api/v1/docs
+- **Auth API Docs**: http://localhost:8001/docs
+
+### 📝 Dados de Teste
+
+O banco de dados pode ser populado com dados de teste para desenvolvimento.
+
+---
+
+## 🛑 Parar os Serviços
+
+```bash
+# Com Makefile
+cd <repositório>
+make stop-dev
+
+# Com Docker Compose
+docker compose down
+
+# Parar tudo e limpar volumes
+make clean
+```
+
+---
+
+## 🐛 Problemas Comuns
 
 ### Porta já em uso
 
-```
-Error starting userland proxy: listen tcp4 0.0.0.0:8000: bind: address already in use
+Se as portas 3000, 8000, 8001, 5432 ou 5433 já estiverem em uso:
+
+```bash
+# Ver o que está usando a porta (Windows)
+netstat -ano | findstr :8000
+
+# Ver o que está usando a porta (Linux/Mac)
+lsof -i :8000
+
+# Parar o processo ou alterar a porta no docker-compose.yml
 ```
 
-**Solução:** Altere a porta no docker-compose.yml ou pare o processo que está usando a porta 8000.
+### Containers não iniciam
+
+```bash
+# Ver logs
+docker compose logs -f
+
+# Rebuildar imagens
+make setup-dev
+make run-dev
+```
+
+### Erro de conexão com banco
+
+```bash
+# Verificar se PostgreSQL está rodando
+docker ps | grep postgres
+
+# Recriar volumes
+docker compose down -v
+docker compose up -d
+```
+
+### Frontend não carrega dados
+
+```bash
+# Verificar variáveis de ambiente
+cat Frontend/Frontend/.env
+
+# Verificar se Backend está respondendo
+curl http://localhost:8000/health
+
+# Ver logs do Frontend
+docker logs frontend-frontend-1
+```
+
+---
+
+## 📚 Próximos Passos
+
+Agora que o projeto está rodando:
+
+1. 📖 **[Entenda a Arquitetura](architecture.md)** - Como os serviços se comunicam
+2. 🔐 **[Configure Autenticação](../auth/index.md)** - Fluxo de login e tokens
+3. 📊 **[Explore as APIs](../api/index.md)** - Endpoints disponíveis
+4. 🚀 **[Deploy em Produção](deployment.md)** - Preparar para produção
+
+---
 
 ## 🆘 Suporte
 
-Se você encontrar problemas:
+Encontrou algum problema?
 
-1. Verifique os [Issues conhecidos](https://github.com/Imobly/Documentation/issues)
-2. Consulte a [documentação da API](../api/index.md)
-3. Abra um [novo issue](https://github.com/Imobly/Documentation/issues/new)
+- 📖 Verifique a [documentação completa](../index.md)
+- 🐛 Abra uma issue no GitHub dos repositórios
+- 💬 Entre em contato: devcostta@gmail.com
+
+---
+
+**✅ Pronto! O projeto está rodando localmente.**

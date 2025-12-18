@@ -1,634 +1,406 @@
-# Arquitetura do Sistema
+# 🏗️ Arquitetura do Sistema
 
-Este documento descreve a arquitetura completa do **Imobly**, incluindo decisões técnicas, padrões arquiteturais e estrutura do sistema.
+Este documento descreve a arquitetura técnica do Imobly, um sistema de gestão imobiliária baseado em microserviços.
 
-## Visão Geral da Arquitetura
+---
 
-O Imobly segue uma arquitetura **modular e escalável** baseada em microserviços e padrões modernos de desenvolvimento.
+## 🎯 Visão Geral
+
+O Imobly é construído seguindo uma arquitetura de **microserviços desacoplados**, onde cada serviço tem responsabilidade única e se comunica via HTTP/REST.
 
 ```mermaid
 graph TB
-    subgraph "Client Layer"
-        A[Web App<br/>Next.js]
-        B[Mobile PWA]
-        C[Admin Dashboard]
-    end
-    
-    subgraph "API Layer"
-        D[API Gateway<br/>FastAPI]
-        E[Authentication Service]
-        F[Business Logic]
-    end
-    
-    subgraph "Data Layer"
-        G[MySQL Database]
-        H[Redis Cache]
-        I[File Storage<br/>S3/MinIO]
-    end
-    
-    subgraph "External Services"
-        J[Email Service]
-        K[SMS Service]
-        L[Payment Gateway]
-    end
-    
-    A --> D
-    B --> D
-    C --> D
-    D --> E
-    D --> F
-    E --> G
-    F --> G
-    F --> H
-    F --> I
-    F --> J
-    F --> K
-    F --> L
-    
-    style A fill:#e1f5fe
-    style B fill:#e1f5fe
-    style C fill:#e1f5fe
-    style D fill:#f3e5f5
-    style E fill:#f3e5f5
-    style F fill:#f3e5f5
-    style G fill:#e8f5e8
-    style H fill:#e8f5e8
-    style I fill:#e8f5e8
+    User[👤 Usuário] --> Frontend[🎨 Frontend<br/>Next.js]
+    Frontend --> AuthAPI[🔐 Auth API<br/>FastAPI]
+    Frontend --> Backend[⚙️ Backend API<br/>FastAPI]
+    Backend --> AuthAPI
+    AuthAPI --> AuthDB[(🗄️ Auth DB<br/>PostgreSQL)]
+    Backend --> BackendDB[(🗄️ Backend DB<br/>PostgreSQL)]
 ```
 
-## Arquitetura de Software
+---
 
-### Padrões Arquiteturais
+## 📦 Componentes
 
-#### 1. **Model-View-Controller (MVC)**
-Separação clara entre:
-- **Model**: Entidades e lógica de dados
-- **View**: Interface do usuário (API responses)
-- **Controller**: Lógica de controle e endpoints
+### 🔐 Auth API (Porta 8001)
 
-#### 2. **Repository Pattern**
-Abstração da camada de dados:
+**Responsabilidades:**
+- Gerenciamento de usuários (registro, login, atualização)
+- Autenticação via JWT
+- Emissão e validação de tokens
+- Controle de sessões
 
-```python
-class PropertyRepository:
-    def __init__(self, db: Session):
-        self.db = db
-    
-    def get_all(self, filters: PropertyFilters) -> List[Property]:
-        query = self.db.query(Property)
-        if filters.status:
-            query = query.filter(Property.status == filters.status)
-        return query.all()
-    
-    def get_by_id(self, property_id: int) -> Property:
-        return self.db.query(Property).filter(Property.id == property_id).first()
+**Stack Tecnológica:**
+- FastAPI (Python 3.11)
+- PostgreSQL 15
+- JWT (python-jose, HS256)
+- Pydantic (validação)
+- SQLAlchemy (ORM)
+
+**Endpoints Principais:**
+- `POST /api/v1/auth/register` - Criar usuário
+- `POST /api/v1/auth/login` - Fazer login
+- `GET /api/v1/auth/me` - Obter usuário logado
+- `PUT /api/v1/auth/me` - Atualizar perfil
+
+**Banco de Dados:**
+```
+auth_db
+├── users (id, email, username, hashed_password, full_name, created_at, updated_at)
 ```
 
-#### 3. **Dependency Injection**
-Gerenciamento de dependências com FastAPI:
+---
 
-```python
-def get_property_service(
-    db: Session = Depends(get_db),
-    cache: Redis = Depends(get_redis)
-) -> PropertyService:
-    repository = PropertyRepository(db)
-    return PropertyService(repository, cache)
+### ⚙️ Backend API (Porta 8000)
 
-@router.get("/properties")
-async def list_properties(
-    service: PropertyService = Depends(get_property_service)
-):
-    return await service.list_properties()
+**Responsabilidades:**
+- Gestão de propriedades (CRUD)
+- Gestão de contratos e locatários
+- Gestão de cobranças e pagamentos
+- Dashboard e relatórios
+- Upload de documentos
+
+**Stack Tecnológica:**
+- FastAPI (Python 3.11)
+- PostgreSQL 15
+- JWT validation (python-jose)
+- SQLAlchemy (ORM)
+- Alembic (migrações)
+
+**Endpoints Principais:**
+- `GET/POST /api/v1/properties/` - Propriedades
+- `GET/POST /api/v1/tenants/` - Locatários
+- `GET/POST /api/v1/contracts/` - Contratos
+- `GET/POST /api/v1/charges/` - Cobranças
+- `GET /api/v1/dashboard/summary` - Dashboard
+
+**Banco de Dados:**
+```
+imovel_gestao
+├── properties (id, title, address, price, owner_id, ...)
+├── tenants (id, name, email, phone, owner_id, ...)
+├── contracts (id, property_id, tenant_id, start_date, end_date, ...)
+├── charges (id, contract_id, amount, due_date, status, ...)
+└── payments (id, charge_id, amount, paid_at, ...)
 ```
 
-### Clean Architecture
+---
 
-```
-┌─────────────────────────────────────┐
-│            Frameworks & Drivers     │
-│  FastAPI │ SQLAlchemy │ Redis │ S3  │
-├─────────────────────────────────────┤
-│         Interface Adapters          │
-│  Controllers │ Repositories │ APIs  │
-├─────────────────────────────────────┤
-│            Application              │
-│   Use Cases │ Services │ DTOs       │
-├─────────────────────────────────────┤
-│              Enterprise             │
-│   Entities │ Domain Logic │ Rules   │
-└─────────────────────────────────────┘
-```
+### 🎨 Frontend (Porta 3000)
 
-## Estrutura do Projeto
+**Responsabilidades:**
+- Interface web responsiva
+- Autenticação de usuários
+- Visualização de propriedades, contratos, cobranças
+- Dashboard interativo
+- Upload de arquivos
 
-### Backend (FastAPI)
+**Stack Tecnológica:**
+- Next.js 14.2.33 (React)
+- TypeScript
+- Tailwind CSS
+- Shadcn/ui (componentes)
+- Axios (HTTP client)
 
-```
-app/
-├── core/                   # Configurações centrais
-│   ├── config.py          # Configurações da aplicação
-│   ├── database.py        # Configuração do banco
-│   ├── security.py        # Autenticação e autorização
-│   └── exceptions.py      # Exceções customizadas
-├── models/                # Modelos SQLAlchemy
-│   ├── __init__.py
-│   ├── property.py
-│   ├── tenant.py
-│   ├── contract.py
-│   └── payment.py
-├── schemas/               # Schemas Pydantic
-│   ├── __init__.py
-│   ├── property.py
-│   ├── tenant.py
-│   └── responses.py
-├── repositories/          # Camada de dados
-│   ├── __init__.py
-│   ├── base.py
-│   ├── property.py
-│   └── tenant.py
-├── services/              # Lógica de negócio
-│   ├── __init__.py
-│   ├── property.py
-│   ├── tenant.py
-│   └── notification.py
-├── api/                   # Endpoints da API
-│   ├── __init__.py
-│   ├── deps.py           # Dependências
-│   └── v1/
-│       ├── __init__.py
-│       ├── router.py
-│       └── endpoints/
-│           ├── __init__.py
-│           ├── auth.py
-│           ├── properties.py
-│           └── tenants.py
-├── utils/                 # Utilitários
-│   ├── __init__.py
-│   ├── helpers.py
-│   └── validators.py
-└── main.py               # Aplicação principal
-```
+**Páginas Principais:**
+- `/` - Dashboard
+- `/login` - Login
+- `/properties` - Listagem de propriedades
+- `/tenants` - Listagem de locatários
+- `/contracts` - Listagem de contratos
+- `/charges` - Listagem de cobranças
 
-### Frontend (Next.js)
+---
 
-```
-src/
-├── app/                   # App Router (Next.js 14)
-│   ├── (auth)/           # Grupo de rotas de auth
-│   ├── dashboard/        # Dashboard principal
-│   ├── properties/       # Gestão de propriedades
-│   ├── tenants/         # Gestão de inquilinos
-│   ├── globals.css      # Estilos globais
-│   ├── layout.tsx       # Layout principal
-│   └── page.tsx         # Página inicial
-├── components/           # Componentes reutilizáveis
-│   ├── ui/              # Componentes base (shadcn/ui)
-│   ├── forms/           # Formulários
-│   ├── charts/          # Gráficos e visualizações
-│   └── layout/          # Componentes de layout
-├── lib/                 # Utilitários e configurações
-│   ├── api.ts          # Cliente HTTP
-│   ├── auth.ts         # Configuração de autenticação
-│   ├── utils.ts        # Funções utilitárias
-│   └── validations.ts  # Esquemas de validação
-├── hooks/              # Custom React Hooks
-│   ├── useAuth.ts
-│   ├── useProperties.ts
-│   └── useNotifications.ts
-├── types/              # Definições TypeScript
-│   ├── property.ts
-│   ├── tenant.ts
-│   └── api.ts
-└── styles/             # Estilos adicionais
-```
+## 🔐 Fluxo de Autenticação
 
-## Base de Dados
-
-### Modelo Relacional
+### 1️⃣ Login
 
 ```mermaid
-erDiagram
-    Property ||--o{ Unit : has
-    Property ||--o{ Contract : contains
-    Property ||--o{ Expense : incurs
-    
-    Tenant ||--o{ Contract : signs
-    Tenant ||--o{ Payment : makes
-    
-    Contract ||--o{ Payment : generates
-    
-    Unit ||--o{ Contract : rented_by
-    
-    Property {
-        int id PK
-        string name
-        string address
-        string city
-        string state
-        string zip_code
-        enum type
-        float area
-        int bedrooms
-        int bathrooms
-        decimal rent_value
-        enum status
-        datetime created_at
-        datetime updated_at
-    }
-    
-    Unit {
-        int id PK
-        int property_id FK
-        string identifier
-        float area
-        int bedrooms
-        int bathrooms
-        decimal rent_value
-        enum status
-    }
-    
-    Tenant {
-        int id PK
-        string name
-        string email
-        string phone
-        string cpf_cnpj
-        date birth_date
-        string profession
-        decimal income
-        text address
-        json emergency_contact
-        enum status
-        datetime created_at
-        datetime updated_at
-    }
-    
-    Contract {
-        int id PK
-        int property_id FK
-        int unit_id FK
-        int tenant_id FK
-        string title
-        date start_date
-        date end_date
-        decimal rent_value
-        decimal deposit
-        float interest_rate
-        float fine_rate
-        enum status
-        text terms
-        string document_url
-        datetime created_at
-        datetime updated_at
-    }
-    
-    Payment {
-        int id PK
-        int contract_id FK
-        int tenant_id FK
-        date due_date
-        date payment_date
-        decimal amount
-        decimal fine_amount
-        decimal total_amount
-        enum status
-        enum payment_method
-        text description
-        datetime created_at
-        datetime updated_at
-    }
-    
-    Expense {
-        int id PK
-        int property_id FK
-        string category
-        string type
-        text description
-        decimal amount
-        date expense_date
-        enum status
-        enum priority
-        string vendor
-        string receipt_url
-        text notes
-        datetime created_at
-        datetime updated_at
-    }
+sequenceDiagram
+    participant U as 👤 Usuário
+    participant F as 🎨 Frontend
+    participant A as 🔐 Auth API
+    participant D as 🗄️ Auth DB
+
+    U->>F: Preenche username/password
+    F->>A: POST /api/v1/auth/login
+    A->>D: Consulta usuário
+    D-->>A: Dados do usuário
+    A->>A: Valida senha (bcrypt)
+    A->>A: Gera JWT token
+    A-->>F: {access_token, user}
+    F->>F: Salva token em localStorage
+    F-->>U: Redireciona para dashboard
 ```
 
-### Índices e Performance
+### 2️⃣ Requisição Autenticada
 
-```sql
--- Índices principais para performance
-CREATE INDEX idx_property_status ON properties(status);
-CREATE INDEX idx_property_city ON properties(city);
-CREATE INDEX idx_tenant_status ON tenants(status);
-CREATE INDEX idx_contract_dates ON contracts(start_date, end_date);
-CREATE INDEX idx_payment_due_date ON payments(due_date);
-CREATE INDEX idx_payment_status ON payments(status);
-CREATE INDEX idx_expense_date ON expenses(expense_date);
+```mermaid
+sequenceDiagram
+    participant F as 🎨 Frontend
+    participant B as ⚙️ Backend API
+    participant A as 🔐 Auth API
 
--- Índices compostos
-CREATE INDEX idx_contract_property_tenant ON contracts(property_id, tenant_id);
-CREATE INDEX idx_payment_tenant_date ON payments(tenant_id, due_date);
+    F->>B: GET /api/v1/properties/<br/>Authorization: Bearer <token>
+    B->>B: Extrai token do header
+    B->>B: Valida JWT (SECRET_KEY)
+    B->>B: Extrai user_id do token
+    B->>B: Consulta propriedades<br/>filtradas por user_id
+    B-->>F: Lista de propriedades
 ```
 
-## Segurança
+!!! danger "SECRET_KEY Compartilhada"
+    O **Backend** e o **Auth API** devem usar a **MESMA SECRET_KEY** para que o Backend consiga validar os tokens emitidos pelo Auth API.
 
-### Autenticação JWT
+---
 
-```python
-# Estrutura do JWT Token
-{
-    "sub": "user_email@example.com",
-    "user_id": 123,
-    "role": "manager",
-    "permissions": ["properties:read", "properties:write"],
-    "exp": 1699123456,
-    "iat": 1699119856
-}
+## 🌐 Comunicação entre Serviços
+
+### Frontend → Auth API
+
+**Propósito:** Autenticação de usuários
+
+**Endpoints:**
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
+- `PUT /api/v1/auth/me`
+
+**Autenticação:** Não requerida para login/register, requerida para /me
+
+---
+
+### Frontend → Backend
+
+**Propósito:** Operações de negócio
+
+**Endpoints:**
+- Todas as rotas `/api/v1/*` (properties, tenants, contracts, charges, etc)
+
+**Autenticação:** Requerida (Bearer token em todos os requests)
+
+---
+
+### Backend → Auth API
+
+**Propósito:** Validação de tokens (se necessário)
+
+**Nota:** Atualmente o Backend valida tokens localmente usando a SECRET_KEY compartilhada, sem necessidade de consultar o Auth API.
+
+---
+
+## 🗄️ Bancos de Dados
+
+### Desenvolvimento
+
+Cada serviço tem seu próprio banco PostgreSQL:
+
+| Serviço | Host | Porta | Database | Usuário | Senha |
+|---------|------|-------|----------|---------|-------|
+| Auth API | localhost | 5433 | auth_db | postgres | admin123 |
+| Backend | localhost | 5432 | imovel_gestao | postgres | admin123 |
+| Backend Test | localhost | 5434 | test_db | postgres | admin123 |
+
+### Produção
+
+Ambos os serviços usam **Supabase** (PostgreSQL gerenciado):
+
+- **Connection Pooler:** Transaction Mode (porta 6543)
+- **Direct Connection:** Porta padrão 5432 (não recomendado)
+
+!!! warning "Migração de Dados"
+    Em produção, você deve criar os schemas separadamente:
+    - Database 1: `auth_db` (tabelas de usuários)
+    - Database 2: `imovel_gestao` (tabelas de negócio)
+
+---
+
+## 🐳 Docker & Docker Compose
+
+### Desenvolvimento
+
+Cada repositório tem seu `docker-compose.yml`:
+
+```yaml
+# Auth-api/docker-compose.yml
+services:
+  auth-api:
+    build: .
+    ports: ["8001:8001"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:admin123@postgres:5432/auth_db
+  postgres:
+    image: postgres:15
+    ports: ["5433:5432"]
 ```
 
-### Autorização (RBAC)
+```yaml
+# Backend/Backend/docker-compose.yml
+services:
+  backend:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:admin123@postgres:5432/imovel_gestao
+  postgres:
+    image: postgres:15
+    ports: ["5432:5432"]
+```
 
-```python
-class RolePermissions:
-    ADMIN = [
-        "users:*",
-        "properties:*",
-        "tenants:*",
-        "contracts:*",
-        "payments:*",
-        "reports:*"
-    ]
+```yaml
+# Frontend/Frontend/docker-compose.yml
+services:
+  frontend:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8001
+```
+
+### Produção
+
+Cada repositório tem `docker-compose.prod.yml` que:
+- Usa variáveis do `.env.prod`
+- Conecta ao Supabase em vez de PostgreSQL local
+- Não expõe portas desnecessárias
+- Usa healthchecks e restart policies
+
+---
+
+## 🔧 Variáveis de Ambiente Críticas
+
+### Auth API
+
+```bash
+# .env (desenvolvimento)
+DATABASE_URL=postgresql://postgres:admin123@postgres:5432/auth_db
+SECRET_KEY=<chave-de-32-bytes-hex>
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# .env.prod (produção)
+DATABASE_URL=postgresql://user:pass@host:6543/auth_db?pgbouncer=true
+SECRET_KEY=<MESMO-SECRET-DO-BACKEND>
+```
+
+### Backend
+
+```bash
+# .env (desenvolvimento)
+DATABASE_URL=postgresql://postgres:admin123@postgres:5432/imovel_gestao
+AUTH_API_SECRET_KEY=<MESMO-SECRET-DO-AUTH-API>
+ALGORITHM=HS256
+
+# .env.prod (produção)
+DATABASE_URL=postgresql://user:pass@host:6543/imovel_gestao?pgbouncer=true
+AUTH_API_SECRET_KEY=<MESMO-SECRET-DO-AUTH-API>
+```
+
+### Frontend
+
+```bash
+# .env (desenvolvimento)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_AUTH_API_URL=http://localhost:8001
+
+# .env.prod (produção)
+NEXT_PUBLIC_API_URL=https://api.seudominio.com
+NEXT_PUBLIC_AUTH_API_URL=https://auth.seudominio.com
+```
+
+---
+
+## 📊 Diagrama Detalhado de Deploy
+
+```mermaid
+graph TB
+    subgraph "Produção"
+        LB[⚖️ Load Balancer<br/>Nginx/Caddy]
+        LB --> F[🎨 Frontend<br/>Docker Container]
+        LB --> B[⚙️ Backend<br/>Docker Container]
+        LB --> A[🔐 Auth API<br/>Docker Container]
+        
+        A --> SDB1[(☁️ Supabase<br/>auth_db)]
+        B --> SDB2[(☁️ Supabase<br/>imovel_gestao)]
+    end
     
-    MANAGER = [
-        "properties:read", "properties:write",
-        "tenants:read", "tenants:write",
-        "contracts:read", "contracts:write",
-        "payments:read", "payments:write",
-        "reports:read"
-    ]
-    
-    AGENT = [
-        "properties:read",
-        "tenants:read",
-        "contracts:read",
-        "payments:read"
-    ]
+    subgraph "Desenvolvimento"
+        F_DEV[🎨 Frontend<br/>:3000]
+        B_DEV[⚙️ Backend<br/>:8000]
+        A_DEV[🔐 Auth API<br/>:8001]
+        
+        A_DEV --> PG1[(🐘 PostgreSQL<br/>:5433)]
+        B_DEV --> PG2[(🐘 PostgreSQL<br/>:5432)]
+    end
 ```
 
-### Validação de Dados
+---
 
-```python
-class PropertyCreate(BaseModel):
-    name: str = Field(..., min_length=3, max_length=100)
-    address: str = Field(..., min_length=10, max_length=200)
-    city: str = Field(..., min_length=2, max_length=50)
-    state: str = Field(..., regex=r'^[A-Z]{2}$')
-    zip_code: str = Field(..., regex=r'^\d{5}-?\d{3}$')
-    rent_value: Decimal = Field(..., gt=0, decimal_places=2)
-    
-    @validator('email')
-    def validate_email(cls, v):
-        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', v):
-            raise ValueError('Email inválido')
-        return v
-```
+## 🚀 Escalabilidade
 
-## Performance e Escalabilidade
+### Horizontal Scaling
 
-### Caching Strategy
+Cada serviço pode ser escalado independentemente:
 
-```python
-# Redis para cache de dados frequentes
-@cached(ttl=300)  # 5 minutos
-async def get_dashboard_stats(user_id: int) -> DashboardStats:
-    # Cálculos pesados de estatísticas
-    return stats
-
-# Cache de queries pesadas
-@cached(key="properties:list:{filters_hash}", ttl=600)
-async def list_properties(filters: PropertyFilters):
-    return await repository.get_filtered_properties(filters)
-```
-
-### Database Optimization
-
-```sql
--- Particionamento por data (payments table)
-CREATE TABLE payments (
-    id INT PRIMARY KEY,
-    due_date DATE,
-    amount DECIMAL(10,2),
-    -- outros campos
-) PARTITION BY RANGE (YEAR(due_date)) (
-    PARTITION p2023 VALUES LESS THAN (2024),
-    PARTITION p2024 VALUES LESS THAN (2025),
-    PARTITION p2025 VALUES LESS THAN (2026)
-);
-
--- Índices parciais para dados ativos
-CREATE INDEX idx_active_contracts 
-ON contracts(property_id, tenant_id) 
-WHERE status = 'active';
+```bash
+# Docker Compose (múltiplas instâncias)
+docker compose up -d --scale backend=3
+docker compose up -d --scale auth-api=2
 ```
 
 ### Load Balancing
 
+Use Nginx ou Caddy para distribuir requisições:
+
 ```nginx
-upstream imobly_backend {
-    least_conn;
-    server backend1:8000 weight=3;
-    server backend2:8000 weight=3;
-    server backend3:8000 weight=2;
+upstream backend_api {
+    server backend_1:8000;
+    server backend_2:8000;
+    server backend_3:8000;
 }
 
 server {
-    listen 80;
-    server_name api.imobly.com;
-    
-    location / {
-        proxy_pass http://imobly_backend;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    location /api/ {
+        proxy_pass http://backend_api;
     }
 }
 ```
 
-## Monitoramento e Observabilidade
+---
 
-### Logs Estruturados
+## 🔒 Segurança
 
-```python
-import structlog
+### Camadas de Segurança
 
-logger = structlog.get_logger()
+1. **JWT Tokens:** Expira em 30 minutos
+2. **HTTPS:** Obrigatório em produção
+3. **CORS:** Configurado para domínios permitidos
+4. **SQL Injection:** Prevenido via SQLAlchemy ORM
+5. **Password Hashing:** bcrypt com salt automático
+6. **Environment Variables:** Segredos nunca no código
 
-# Log estruturado para auditoria
-logger.info(
-    "property_created",
-    user_id=current_user.id,
-    property_id=property.id,
-    property_name=property.name,
-    ip_address=request.client.host
-)
-```
+### Checklist de Produção
 
-### Métricas
+- [ ] SECRET_KEY com 32 bytes aleatórios
+- [ ] HTTPS habilitado (TLS 1.2+)
+- [ ] CORS configurado corretamente
+- [ ] DATABASE_URL com Transaction Mode
+- [ ] Logs configurados (não printar tokens)
+- [ ] Rate limiting habilitado
+- [ ] Firewall configurado (portas 80, 443)
 
-```python
-from prometheus_client import Counter, Histogram, Gauge
+---
 
-# Contadores de requests
-requests_total = Counter('http_requests_total', 'Total HTTP requests', ['method', 'endpoint'])
-request_duration = Histogram('http_request_duration_seconds', 'Request duration')
-active_connections = Gauge('active_connections', 'Active database connections')
-```
+## 📚 Referências
 
-### Health Checks
+- [Getting Started](getting-started.md) - Setup inicial
+- [Deployment Guide](deployment.md) - Deploy em produção
+- [API Reference](../api/index.md) - Endpoints detalhados
+- [Auth Guide](../auth/index.md) - Fluxo de autenticação
 
-```python
-@router.get("/health")
-async def health_check():
-    checks = {
-        "database": await check_database(),
-        "redis": await check_redis(),
-        "storage": await check_storage()
-    }
-    
-    healthy = all(checks.values())
-    status_code = 200 if healthy else 503
-    
-    return JSONResponse(
-        content={"status": "healthy" if healthy else "unhealthy", "checks": checks},
-        status_code=status_code
-    )
-```
+---
 
-## Deploy e DevOps
-
-### Containerização
-
-```dockerfile
-# Dockerfile para produção
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Instalar dependências do sistema
-RUN apt-get update && apt-get install -y \
-    gcc \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Instalar dependências Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copiar código
-COPY . .
-
-# Usuário não-root para segurança
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
-
-# Comando de inicialização
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Docker Compose
-
-```yaml
-version: '3.8'
-
-services:
-  api:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=mysql+pymysql://user:pass@mysql:3306/imobly
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - mysql
-      - redis
-    
-  mysql:
-    image: mysql:8.0
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=imobly
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=pass
-    volumes:
-      - mysql_data:/var/lib/mysql
-    
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - api
-
-volumes:
-  mysql_data:
-```
-
-## Testes
-
-### Estratégia de Testes
-
-```python
-# Testes unitários
-class TestPropertyService:
-    @pytest.fixture
-    def property_service(self, mock_repository):
-        return PropertyService(mock_repository)
-    
-    def test_create_property_success(self, property_service):
-        # Arrange
-        property_data = PropertyCreate(name="Test Property", ...)
-        
-        # Act
-        result = property_service.create_property(property_data)
-        
-        # Assert
-        assert result.name == "Test Property"
-        mock_repository.save.assert_called_once()
-
-# Testes de integração
-class TestPropertyAPI:
-    def test_create_property_endpoint(self, test_client, auth_headers):
-        response = test_client.post(
-            "/api/v1/properties",
-            json={"name": "Test Property", ...},
-            headers=auth_headers
-        )
-        assert response.status_code == 201
-        assert response.json()["data"]["name"] == "Test Property"
-```
-
-### Coverage e Qualidade
-
-```bash
-# Executar testes com coverage
-pytest --cov=app --cov-report=html --cov-report=term
-
-# Quality gates
-coverage: >= 80%
-complexity: <= 10
-duplication: <= 3%
-```
-
-Esta arquitetura garante **escalabilidade**, **manutenibilidade** e **performance** para o crescimento do Imobly, seguindo as melhores práticas da indústria.
+**📝 Última atualização:** Janeiro 2025  
+**🔧 Versão da Stack:** Auth API 1.0 | Backend 1.0 | Frontend 1.0

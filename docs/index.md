@@ -3,12 +3,37 @@
 Sistema completo de gestão imobiliária moderno e escalável.
 
 ![Imobly Logo](https://img.shields.io/badge/Imobly-Documentation-blue)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/Imobly/Documentation)
-[![Demo](https://img.shields.io/badge/Demo-Live-green)](https://demo.imobly.com)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/Imobly)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## 🎯 Visão Geral
 
 O **Imobly** é uma plataforma completa para gestão imobiliária que oferece controle total sobre propriedades, inquilinos, contratos, pagamentos e despesas através de uma interface moderna e intuitiva.
+
+### 🏗️ Arquitetura do Sistema
+
+O projeto é dividido em **3 repositórios independentes**:
+
+- **[Auth-api](https://github.com/Imobly/auth-api)** - Serviço de autenticação e gerenciamento de usuários
+- **[Backend](https://github.com/Imobly/Backend)** - API REST para lógica de negócio
+- **[Frontend](https://github.com/Imobly/Frontend)** - Interface web em Next.js
+
+### 🚀 Quick Start
+
+```bash
+# Clone o projeto completo
+git clone https://github.com/Imobly/auth-api
+git clone https://github.com/Imobly/Backend  
+git clone https://github.com/Imobly/Frontend
+
+# Execute localmente (na raiz de cada repositório)
+make run-all-dev
+
+# Acesse: http://localhost:3000
+```
+
+📖 **[Veja o guia completo de instalação →](guides/getting-started.md)**
 
 
 ## ✨ Principais Funcionalidades

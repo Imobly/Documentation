@@ -1,659 +1,438 @@
-# Deployment Guide
+# 🚀 Guia de Deployment
 
-Este guia aborda como fazer o deploy do **Imobly** em diferentes ambientes, desde desenvolvimento até produção.
+Este guia fornece instruções completas para fazer o deploy do Imobly em produção usando Docker e Supabase.
 
-## Ambientes
+---
 
-### Development
-- **Propósito:** Desenvolvimento local
-- **Recursos:** Docker Compose local
-- **URL:** http://localhost:8000
+## 📋 Pré-requisitos
 
-### Staging
-- **Propósito:** Testes e homologação
-- **Recursos:** Servidor de teste
-- **URL:** https://staging.imobly.com
+Antes de começar o deploy, certifique-se de ter:
 
-### Production
-- **Propósito:** Ambiente de produção
-- **Recursos:** Infraestrutura escalável
-- **URL:** https://api.imobly.com
+- **Servidor Linux** (Ubuntu 20.04+ recomendado) ou Windows Server
+- **Docker** (20.10+) e **Docker Compose** (2.0+) instalados
+- **Conta Supabase** criada (https://supabase.com)
+- **Domínio configurado** (opcional, mas recomendado)
+- **Certificado SSL** (Let's Encrypt ou similar)
 
-## Docker Deployment
+---
 
-### Desenvolvimento Local
+## 🗄️ 1. Configurar Supabase
 
-Requisitos:
-- Docker 20.10+
-- Docker Compose 2.0+
+### 1.1 Criar Projeto no Supabase
 
-```bash
-# Clone o repositório
-git clone https://github.com/Imobly/imobly-backend.git
-cd imobly-backend
+1. Acesse https://supabase.com e faça login
+2. Clique em "New Project"
+3. Preencha:
+   - **Name:** Imobly Auth
+   - **Database Password:** Gere uma senha forte
+   - **Region:** Escolha mais próximo aos usuários
 
-# Configure o ambiente
-cp .env.example .env
+### 1.2 Obter Credenciais
 
-# Execute o projeto
-docker-compose up --build -d
+No painel do projeto:
 
-# Verificar status
-docker-compose ps
+1. Vá em **Settings** → **Database**
+2. Role até **Connection String**
+3. Copie a **Transaction Mode Connection String** (porta 6543)
 
-# Ver logs
-docker-compose logs -f api
+Exemplo:
+```
+postgresql://postgres.xxxxx:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
-### Configuração do .env
+### 1.3 Criar Segundo Banco (opcional)
 
-```env
-# Database
-DATABASE_URL=mysql+pymysql://imobly_user:imobly_pass@mysql:3306/imobly
-DATABASE_URL_TEST=mysql+pymysql://imobly_user:imobly_pass@mysql:3306/imobly_test
+Para separar `auth_db` e `imovel_gestao`:
 
-# Redis
-REDIS_URL=redis://redis:6379
+**Opção A:** Usar schemas no mesmo banco
+```sql
+CREATE SCHEMA auth;
+CREATE SCHEMA business;
+```
 
-# Security
-SECRET_KEY=your-super-secret-key-here-change-in-production
+**Opção B:** Criar segundo projeto Supabase
+- Repita os passos 1.1 e 1.2 para ter dois bancos independentes
+
+---
+
+## 🔐 2. Gerar SECRET_KEY
+
+A SECRET_KEY deve ser a **mesma** no Auth API e Backend:
+
+```bash
+# Gerar SECRET_KEY de 32 bytes
+openssl rand -hex 32
+
+# Exemplo de saída:
+# a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2
+```
+
+!!! danger "Importante"
+    - Guarde essa SECRET_KEY em um local seguro
+    - Use a MESMA chave no Auth API e Backend
+    - NUNCA commite a SECRET_KEY no Git
+
+---
+
+## 📝 3. Configurar Variáveis de Ambiente
+
+### 3.1 Auth API
+
+Crie o arquivo `.env.prod` no repositório Auth-api:
+
+```bash
+# Auth-api/.env.prod
+DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+SECRET_KEY=<sua-secret-key-de-32-bytes>
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USERNAME=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-EMAIL_FROM=noreply@imobly.com
-
-# File Storage
-UPLOAD_DIR=/app/uploads
-MAX_FILE_SIZE=10485760  # 10MB
-
-# External Services
-AWS_ACCESS_KEY_ID=your-aws-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret
-AWS_REGION=us-east-1
-S3_BUCKET=imobly-uploads
-
-# Monitoring
-SENTRY_DSN=https://your-sentry-dsn
-LOG_LEVEL=INFO
 ```
 
-## Cloud Deployment
+### 3.2 Backend
 
-### AWS Deployment
-
-#### Usando AWS ECS (Recomendado)
-
-1. **Criar cluster ECS:**
+Crie o arquivo `.env.prod` no repositório Backend:
 
 ```bash
-aws ecs create-cluster --cluster-name imobly-production
+# Backend/Backend/.env.prod
+DATABASE_URL=postgresql://postgres.xxxxx:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+AUTH_API_SECRET_KEY=<MESMA-SECRET-KEY-DO-AUTH-API>
+ALGORITHM=HS256
+AUTH_API_URL=https://auth.seudominio.com
 ```
 
-2. **Configurar RDS (MySQL):**
+### 3.3 Frontend
+
+Crie o arquivo `.env.prod` no repositório Frontend:
 
 ```bash
-aws rds create-db-instance \
-    --db-instance-identifier imobly-db \
-    --db-instance-class db.t3.micro \
-    --engine mysql \
-    --engine-version 8.0 \
-    --master-username admin \
-    --master-user-password SecurePassword123 \
-    --allocated-storage 20 \
-    --vpc-security-group-ids sg-xxxxxxxxx
+# Frontend/Frontend/.env.prod
+NEXT_PUBLIC_API_URL=https://api.seudominio.com
+NEXT_PUBLIC_AUTH_API_URL=https://auth.seudominio.com
 ```
 
-3. **Task Definition (task-definition.json):**
-
-```json
-{
-  "family": "imobly-api",
-  "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
-  "cpu": "512",
-  "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::account:role/ecsTaskExecutionRole",
-  "containerDefinitions": [
-    {
-      "name": "imobly-api",
-      "image": "your-account.dkr.ecr.region.amazonaws.com/imobly-api:latest",
-      "portMappings": [
-        {
-          "containerPort": 8000,
-          "protocol": "tcp"
-        }
-      ],
-      "environment": [
-        {
-          "name": "DATABASE_URL",
-          "value": "mysql+pymysql://admin:password@rds-endpoint:3306/imobly"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/imobly-api",
-          "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
-    }
-  ]
-}
-```
-
-4. **Deploy com ECS Service:**
-
-```bash
-aws ecs create-service \
-    --cluster imobly-production \
-    --service-name imobly-api-service \
-    --task-definition imobly-api:1 \
-    --desired-count 2 \
-    --launch-type FARGATE \
-    --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx,subnet-yyy],securityGroups=[sg-zzz],assignPublicIp=ENABLED}"
-```
-
-#### Usando EC2 com Docker
-
-1. **Configurar instância EC2:**
-
-```bash
-# Instalar Docker
-sudo yum update -y
-sudo yum install -y docker
-sudo service docker start
-sudo usermod -a -G docker ec2-user
-
-# Instalar Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-```
-
-2. **Deploy da aplicação:**
-
-```bash
-# Clonar projeto
-git clone https://github.com/Imobly/imobly-backend.git
-cd imobly-backend
-
-# Configurar ambiente de produção
-cp .env.production .env
-
-# Deploy
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Digital Ocean Deployment
-
-#### App Platform (Recomendado)
-
-1. **Criar app.yaml:**
-
-```yaml
-name: imobly-api
-services:
-- name: api
-  source_dir: /
-  github:
-    repo: Imobly/imobly-backend
-    branch: main
-  run_command: uvicorn app.main:app --host 0.0.0.0 --port 8080
-  environment_slug: python
-  instance_count: 2
-  instance_size_slug: basic-xxs
-  envs:
-  - key: DATABASE_URL
-    value: ${db.DATABASE_URL}
-  - key: REDIS_URL  
-    value: ${redis.DATABASE_URL}
-  http_port: 8080
-
-databases:
-- name: db
-  engine: MYSQL
-  version: "8"
-  size: db-s-1vcpu-1gb
-  
-- name: redis
-  engine: REDIS
-  version: "7"
-  size: db-s-1vcpu-1gb
-```
-
-2. **Deploy via CLI:**
-
-```bash
-# Instalar doctl
-curl -sL https://github.com/digitalocean/doctl/releases/download/v1.98.0/doctl-1.98.0-linux-amd64.tar.gz | tar -xzv
-sudo mv doctl /usr/local/bin
-
-# Autenticar
-doctl auth init
-
-# Criar app
-doctl apps create --spec app.yaml
-```
-
-### Google Cloud Platform
-
-#### Cloud Run (Serverless)
-
-1. **Configurar gcloud:**
-
-```bash
-gcloud auth login
-gcloud config set project your-project-id
-```
-
-2. **Deploy:**
-
-```bash
-# Build e push da imagem
-gcloud builds submit --tag gcr.io/your-project-id/imobly-api
-
-# Deploy no Cloud Run
-gcloud run deploy imobly-api \
-    --image gcr.io/your-project-id/imobly-api \
-    --platform managed \
-    --region us-central1 \
-    --allow-unauthenticated \
-    --set-env-vars DATABASE_URL="mysql+pymysql://user:pass@/db?unix_socket=/cloudsql/project:region:instance"
-```
-
-## CI/CD Pipeline
-
-### GitHub Actions
-
-Crie `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
-    
-    - name: Run tests
-      run: pytest --cov=app tests/
-    
-    - name: Check code quality
-      run: |
-        black --check app/
-        isort --check-only app/
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
-    
-    - name: Build and push Docker image
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: imobly-api
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Deploy to ECS
-      run: |
-        aws ecs update-service \
-            --cluster imobly-production \
-            --service imobly-api-service \
-            --force-new-deployment
-```
-
-### Deployment com Ansible
-
-1. **Inventory (hosts.yml):**
-
-```yaml
-all:
-  children:
-    production:
-      hosts:
-        web1:
-          ansible_host: 1.2.3.4
-          ansible_user: ubuntu
-        web2:
-          ansible_host: 1.2.3.5
-          ansible_user: ubuntu
-```
-
-2. **Playbook (deploy.yml):**
-
-```yaml
 ---
-- name: Deploy Imobly API
-  hosts: production
-  become: yes
-  vars:
-    app_name: imobly-api
-    app_version: "{{ github_sha | default('latest') }}"
-    
-  tasks:
-    - name: Pull latest Docker image
-      docker_image:
-        name: "registry.example.com/{{ app_name }}:{{ app_version }}"
-        source: pull
-        
-    - name: Stop existing container
-      docker_container:
-        name: "{{ app_name }}"
-        state: stopped
-      ignore_errors: yes
-      
-    - name: Remove existing container
-      docker_container:
-        name: "{{ app_name }}"
-        state: absent
-      ignore_errors: yes
-      
-    - name: Start new container
-      docker_container:
-        name: "{{ app_name }}"
-        image: "registry.example.com/{{ app_name }}:{{ app_version }}"
-        state: started
-        restart_policy: always
-        ports:
-          - "8000:8000"
-        env_file: /opt/imobly/.env
-        
-    - name: Verify deployment
-      uri:
-        url: "http://localhost:8000/health"
-        method: GET
-        status_code: 200
-      retries: 5
-      delay: 10
-```
 
-## Database Migrations
+## 🐳 4. Deploy com Docker
 
-### Desenvolvimento
+### 4.1 Fazer Build das Imagens
+
+Em cada repositório:
 
 ```bash
-# Criar nova migração
-alembic revision --autogenerate -m "add new table"
+# Auth-api
+cd auth-api
+make setup-prod
+make deploy
 
-# Aplicar migrações
-alembic upgrade head
+# Backend
+cd ../Backend/Backend
+make setup-prod
+make deploy
 
-# Reverter migração
-alembic downgrade -1
+# Frontend
+cd ../Frontend/Frontend
+make setup-prod
+make deploy
 ```
 
-### Produção
+### 4.2 Verificar Containers
 
 ```bash
-# Backup antes de migrar
-mysqldump -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME > backup_$(date +%Y%m%d_%H%M%S).sql
+docker ps
 
-# Aplicar migrações com verificação
-alembic upgrade head --sql > migration_preview.sql
-# Revisar o SQL gerado
-alembic upgrade head
+# Deve mostrar:
+# - auth-api-auth-api-1
+# - imobly_backend
+# - frontend-frontend-1
 ```
 
-## Monitoramento e Logs
+### 4.3 Verificar Health
 
-### Configuração do Sentry
+```bash
+# Auth API
+curl https://auth.seudominio.com/health
 
-```python
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+# Backend
+curl https://api.seudominio.com/health
 
-sentry_sdk.init(
-    dsn="https://your-sentry-dsn@sentry.io/project-id",
-    integrations=[
-        FastApiIntegration(auto_enabling_integrations=False),
-        SqlalchemyIntegration(),
-    ],
-    traces_sample_rate=0.1,
-    environment="production"
-)
+# Frontend
+curl https://seudominio.com
 ```
 
-### Configuração de Logs
+---
 
-```python
-import logging
-import sys
-from datetime import datetime
+## 🌐 5. Configurar Nginx (Reverse Proxy)
 
-# Configuração de logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(f'logs/imobly_{datetime.now().strftime("%Y%m%d")}.log')
-    ]
-)
+### 5.1 Instalar Nginx
+
+```bash
+sudo apt update
+sudo apt install nginx -y
 ```
 
-### Health Checks
+### 5.2 Configurar Reverse Proxy
 
-```python
-@app.get("/health")
-async def health_check():
-    checks = {
-        "database": await check_database_connection(),
-        "redis": await check_redis_connection(),
-        "storage": await check_storage_connection()
-    }
-    
-    healthy = all(checks.values())
-    
-    return {
-        "status": "healthy" if healthy else "unhealthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "checks": checks
-    }
-```
-
-## SSL/TLS Configuration
-
-### Nginx com Let's Encrypt
+Crie `/etc/nginx/sites-available/imobly`:
 
 ```nginx
+# Frontend
 server {
     listen 80;
-    server_name api.imobly.com;
-    return 301 https://$server_name$request_uri;
+    server_name seudominio.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
 }
 
+# Backend API
 server {
-    listen 443 ssl http2;
-    server_name api.imobly.com;
-    
-    ssl_certificate /etc/letsencrypt/live/api.imobly.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.imobly.com/privkey.pem;
-    
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-    
+    listen 80;
+    server_name api.seudominio.com;
+
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://localhost:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
-```
 
-### Renovação automática do certificado
-
-```bash
-# Adicionar ao crontab
-0 12 * * * /usr/bin/certbot renew --quiet && systemctl reload nginx
-```
-
-## Backup Strategy
-
-### Backup automatizado
-
-```bash
-#!/bin/bash
-# backup.sh
-
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/backups"
-DB_NAME="imobly"
-
-# Database backup
-mysqldump -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME | gzip > $BACKUP_DIR/db_backup_$DATE.sql.gz
-
-# Files backup
-tar -czf $BACKUP_DIR/files_backup_$DATE.tar.gz /app/uploads
-
-# Upload to S3
-aws s3 cp $BACKUP_DIR/db_backup_$DATE.sql.gz s3://imobly-backups/
-aws s3 cp $BACKUP_DIR/files_backup_$DATE.tar.gz s3://imobly-backups/
-
-# Clean old backups (keep 7 days)
-find $BACKUP_DIR -name "*backup*" -mtime +7 -delete
-```
-
-## Troubleshooting
-
-### Problemas Comuns
-
-#### 1. **Container não inicia**
-
-```bash
-# Verificar logs
-docker-compose logs api
-
-# Verificar configurações
-docker-compose config
-
-# Reconstruir imagem
-docker-compose build --no-cache api
-```
-
-#### 2. **Erro de conexão com banco**
-
-```bash
-# Testar conexão
-mysql -h localhost -u imobly_user -p -e "SELECT 1"
-
-# Verificar variáveis de ambiente
-docker-compose exec api env | grep DATABASE
-```
-
-#### 3. **Problemas de performance**
-
-```bash
-# Monitorar recursos
-docker stats
-
-# Verificar logs de erro
-docker-compose logs --tail=100 api
-
-# Analisar queries lentas
-mysql -e "SHOW PROCESSLIST;"
-```
-
-### Scripts de Manutenção
-
-```bash
-# restart.sh - Reiniciar aplicação
-#!/bin/bash
-docker-compose down
-docker-compose up -d
-docker-compose logs -f
-
-# update.sh - Atualizar aplicação
-#!/bin/bash
-git pull origin main
-docker-compose build --no-cache
-docker-compose down
-docker-compose up -d
-```
-
-## Scaling
-
-### Horizontal Scaling
-
-```yaml
-# docker-compose.scale.yml
-version: '3.8'
-
-services:
-  api:
-    deploy:
-      replicas: 3
-    depends_on:
-      - mysql
-      - redis
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    depends_on:
-      - api
-    volumes:
-      - ./nginx-loadbalancer.conf:/etc/nginx/nginx.conf
-```
-
-### Load Balancer Configuration
-
-```nginx
-upstream api_servers {
-    least_conn;
-    server api_1:8000;
-    server api_2:8000;
-    server api_3:8000;
-}
-
+# Auth API
 server {
     listen 80;
+    server_name auth.seudominio.com;
+
     location / {
-        proxy_pass http://api_servers;
+        proxy_pass http://localhost:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 ```
 
-Este guia fornece uma base sólida para fazer o deploy do Imobly em diferentes ambientes, mantendo as melhores práticas de segurança e performance.
+### 5.3 Habilitar Site
+
+```bash
+sudo ln -s /etc/nginx/sites-available/imobly /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+---
+
+## 🔒 6. Configurar SSL (HTTPS)
+
+### 6.1 Instalar Certbot
+
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+```
+
+### 6.2 Obter Certificado
+
+```bash
+sudo certbot --nginx -d seudominio.com -d api.seudominio.com -d auth.seudominio.com
+```
+
+### 6.3 Renovação Automática
+
+```bash
+# Testar renovação
+sudo certbot renew --dry-run
+
+# Certbot adiciona cron automaticamente
+```
+
+---
+
+## 🗃️ 7. Migrações de Banco de Dados
+
+### 7.1 Auth API
+
+```bash
+cd auth-api
+docker compose -f docker-compose.prod.yml exec auth-api alembic upgrade head
+```
+
+### 7.2 Backend
+
+```bash
+cd Backend/Backend
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+```
+
+---
+
+## 📊 8. Monitoramento
+
+### 8.1 Ver Logs
+
+```bash
+# Auth API
+docker logs -f auth-api-auth-api-1
+
+# Backend
+docker logs -f imobly_backend
+
+# Frontend
+docker logs -f frontend-frontend-1
+```
+
+### 8.2 Healthcheck
+
+Crie um script `healthcheck.sh`:
+
+```bash
+#!/bin/bash
+
+echo "Verificando serviços..."
+
+# Auth API
+if curl -f http://localhost:8001/health > /dev/null 2>&1; then
+    echo "✅ Auth API: OK"
+else
+    echo "❌ Auth API: FALHOU"
+fi
+
+# Backend
+if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+    echo "✅ Backend: OK"
+else
+    echo "❌ Backend: FALHOU"
+fi
+
+# Frontend
+if curl -f http://localhost:3000 > /dev/null 2>&1; then
+    echo "✅ Frontend: OK"
+else
+    echo "❌ Frontend: FALHOU"
+fi
+```
+
+### 8.3 Configurar Cronjob
+
+```bash
+# Executar healthcheck a cada 5 minutos
+crontab -e
+
+# Adicionar linha:
+*/5 * * * * /path/to/healthcheck.sh >> /var/log/imobly-health.log 2>&1
+```
+
+---
+
+## 🔄 9. Atualizações
+
+### 9.1 Pull da Nova Versão
+
+```bash
+cd auth-api
+git pull origin main
+
+cd ../Backend/Backend
+git pull origin main
+
+cd ../Frontend/Frontend
+git pull origin develop
+```
+
+### 9.2 Rebuild e Deploy
+
+```bash
+# Em cada repositório
+make deploy
+```
+
+---
+
+## 🐛 10. Troubleshooting
+
+### Container não inicia
+
+```bash
+# Ver logs detalhados
+docker logs <container-id>
+
+# Rebuild imagem
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Erro de conexão com Supabase
+
+```bash
+# Verificar DATABASE_URL
+docker compose -f docker-compose.prod.yml exec backend env | grep DATABASE_URL
+
+# Testar conexão manual
+docker compose -f docker-compose.prod.yml exec backend python -c "from sqlalchemy import create_engine; engine = create_engine('postgresql://...'); print(engine.connect())"
+```
+
+### Token inválido entre serviços
+
+```bash
+# Verificar SECRET_KEY são iguais
+docker compose -f docker-compose.prod.yml exec auth-api env | grep SECRET_KEY
+docker compose -f docker-compose.prod.yml exec backend env | grep AUTH_API_SECRET_KEY
+
+# Devem ser EXATAMENTE iguais
+```
+
+### Frontend não conecta ao Backend
+
+```bash
+# Verificar variáveis de ambiente
+docker compose -f docker-compose.prod.yml exec frontend env | grep NEXT_PUBLIC
+
+# Rebuild frontend com variáveis corretas
+docker compose -f docker-compose.prod.yml build frontend
+docker compose -f docker-compose.prod.yml up -d frontend
+```
+
+---
+
+## 📋 11. Checklist de Deploy
+
+- [ ] Supabase configurado e credenciais copiadas
+- [ ] SECRET_KEY gerada e sincronizada entre Auth API e Backend
+- [ ] Arquivos `.env.prod` criados em todos os repositórios
+- [ ] Docker e Docker Compose instalados no servidor
+- [ ] Imagens buildadas com sucesso
+- [ ] Containers rodando (`docker ps`)
+- [ ] Healthcheck passando em todos os serviços
+- [ ] Nginx configurado como reverse proxy
+- [ ] SSL/HTTPS configurado com Certbot
+- [ ] DNS apontando para o servidor
+- [ ] Migrações de banco executadas
+- [ ] Logs configurados e monitoramento ativo
+- [ ] Backup automático configurado (se necessário)
+
+---
+
+## 🔗 12. Recursos Adicionais
+
+- [Supabase Documentation](https://supabase.com/docs)
+- [Docker Documentation](https://docs.docker.com)
+- [Nginx Documentation](https://nginx.org/en/docs/)
+- [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
+
+---
+
+## 📞 Suporte
+
+Encontrou problemas no deploy?
+
+- 📖 Verifique a [documentação completa](../index.md)
+- 🏗️ Revise a [arquitetura do sistema](architecture.md)
+- 🐛 Abra uma issue no GitHub
+
+---
+
+**🚀 Deploy completo! Seu Imobly está em produção.**
