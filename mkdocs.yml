@@ -99,6 +99,7 @@ nav:
   - 🚀 Guias:
     - Getting Started: guides/getting-started.md
     - Arquitetura: guides/architecture.md
+    - Ambientes: guides/environments.md
   - 📊 Modelagem:
     - Diagramas: diagrams/index.md
     - Protótipo PDF: prototypes/Protorype.pdf
